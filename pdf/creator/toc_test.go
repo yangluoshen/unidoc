@@ -7,7 +7,7 @@ package creator
 import (
 	"testing"
 
-	"github.com/unidoc/unidoc/pdf/model"
+	"github.com/yangluoshen/unidoc/pdf/model"
 )
 
 func TestTOCAdvanced(t *testing.T) {

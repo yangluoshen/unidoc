@@ -17,7 +17,7 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/unidoc/unidoc/common"
+	"github.com/yangluoshen/unidoc/common"
 )
 
 var repairReXrefTable = regexp.MustCompile(`[\r\n]\s*(xref)\s*[\r\n]`)

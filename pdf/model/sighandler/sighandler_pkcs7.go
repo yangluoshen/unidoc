@@ -13,8 +13,8 @@ import (
 
 	"github.com/gunnsth/pkcs7"
 
-	"github.com/unidoc/unidoc/pdf/core"
-	"github.com/unidoc/unidoc/pdf/model"
+	"github.com/yangluoshen/unidoc/pdf/core"
+	"github.com/yangluoshen/unidoc/pdf/model"
 )
 
 // Adobe PKCS7 detached signature handler.

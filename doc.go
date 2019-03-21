@@ -14,7 +14,7 @@
 // https://unidoc.io/examples/getting_started/
 //
 // The godoc for unidoc provides a detailed breakdown of the API and documentation for packages, types and methods.
-// https://godoc.org/github.com/unidoc/unidoc
+// https://godoc.org/github.com/yangluoshen/unidoc
 //
 // Overview of Major Packages
 //

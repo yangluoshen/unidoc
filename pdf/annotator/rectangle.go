@@ -6,11 +6,11 @@
 package annotator
 
 import (
-	"github.com/unidoc/unidoc/common"
+	"github.com/yangluoshen/unidoc/common"
 
-	"github.com/unidoc/unidoc/pdf/contentstream/draw"
-	pdfcore "github.com/unidoc/unidoc/pdf/core"
-	pdf "github.com/unidoc/unidoc/pdf/model"
+	"github.com/yangluoshen/unidoc/pdf/contentstream/draw"
+	pdfcore "github.com/yangluoshen/unidoc/pdf/core"
+	pdf "github.com/yangluoshen/unidoc/pdf/model"
 )
 
 // RectangleAnnotationDef is a rectangle defined with a specified Width and Height and a lower left corner at (X,Y).

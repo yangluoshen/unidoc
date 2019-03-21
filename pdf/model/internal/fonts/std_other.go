@@ -10,7 +10,7 @@
 package fonts
 
 import (
-	"github.com/unidoc/unidoc/pdf/internal/textencoding"
+	"github.com/yangluoshen/unidoc/pdf/internal/textencoding"
 )
 
 func init() {

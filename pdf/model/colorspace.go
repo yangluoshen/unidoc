@@ -10,8 +10,8 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/unidoc/unidoc/common"
-	"github.com/unidoc/unidoc/pdf/core"
+	"github.com/yangluoshen/unidoc/common"
+	"github.com/yangluoshen/unidoc/pdf/core"
 )
 
 // PdfColorspace interface defines the common methods of a PDF colorspace.

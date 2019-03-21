@@ -33,8 +33,8 @@ import (
 
 	lzw1 "golang.org/x/image/tiff/lzw"
 
-	"github.com/unidoc/unidoc/common"
-	"github.com/unidoc/unidoc/pdf/internal/ccittfax"
+	"github.com/yangluoshen/unidoc/common"
+	"github.com/yangluoshen/unidoc/pdf/internal/ccittfax"
 )
 
 // Stream encoding filter names.

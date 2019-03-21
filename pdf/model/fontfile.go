@@ -22,9 +22,9 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/unidoc/unidoc/common"
-	"github.com/unidoc/unidoc/pdf/core"
-	"github.com/unidoc/unidoc/pdf/internal/textencoding"
+	"github.com/yangluoshen/unidoc/common"
+	"github.com/yangluoshen/unidoc/pdf/core"
+	"github.com/yangluoshen/unidoc/pdf/internal/textencoding"
 )
 
 // fontFile represents a font file.

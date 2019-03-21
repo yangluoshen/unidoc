@@ -14,8 +14,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/unidoc/unidoc/pdf/core"
-	"github.com/unidoc/unidoc/pdf/model"
+	"github.com/yangluoshen/unidoc/pdf/core"
+	"github.com/yangluoshen/unidoc/pdf/model"
 )
 
 func loadPageFromPDFFile(filePath string, pageNum int) (*model.PdfPage, error) {

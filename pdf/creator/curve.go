@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/unidoc/unidoc/pdf/model"
+	"github.com/yangluoshen/unidoc/pdf/model"
 )
 
 // newCurve returns new instance of Curve between points (x1,y1) and (x2, y2) with control point (cx,cy).

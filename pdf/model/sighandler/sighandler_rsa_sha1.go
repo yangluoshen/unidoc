@@ -14,8 +14,8 @@ import (
 	"errors"
 	"hash"
 
-	"github.com/unidoc/unidoc/pdf/core"
-	"github.com/unidoc/unidoc/pdf/model"
+	"github.com/yangluoshen/unidoc/pdf/core"
+	"github.com/yangluoshen/unidoc/pdf/model"
 )
 
 // Adobe X509 RSA SHA1 signature handler.

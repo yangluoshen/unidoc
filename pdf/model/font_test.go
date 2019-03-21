@@ -11,13 +11,13 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/unidoc/unidoc/common"
-	"github.com/unidoc/unidoc/pdf/core"
-	"github.com/unidoc/unidoc/pdf/model"
+	"github.com/yangluoshen/unidoc/common"
+	"github.com/yangluoshen/unidoc/pdf/core"
+	"github.com/yangluoshen/unidoc/pdf/model"
 
-	"github.com/unidoc/unidoc/pdf/internal/testutils"
-	"github.com/unidoc/unidoc/pdf/internal/textencoding"
-	"github.com/unidoc/unidoc/pdf/model/internal/fonts"
+	"github.com/yangluoshen/unidoc/pdf/internal/testutils"
+	"github.com/yangluoshen/unidoc/pdf/internal/textencoding"
+	"github.com/yangluoshen/unidoc/pdf/model/internal/fonts"
 )
 
 func init() {

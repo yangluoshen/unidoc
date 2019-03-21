@@ -10,7 +10,7 @@ import (
 	"errors"
 	"io"
 
-	"github.com/unidoc/unidoc/common"
+	"github.com/yangluoshen/unidoc/common"
 )
 
 // readAtLeast reads at least n bytes into slice p.

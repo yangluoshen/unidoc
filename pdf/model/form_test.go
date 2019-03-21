@@ -8,8 +8,8 @@ package model
 import (
 	"testing"
 
-	"github.com/unidoc/unidoc/pdf/core"
-	"github.com/unidoc/unidoc/pdf/internal/testutils"
+	"github.com/yangluoshen/unidoc/pdf/core"
+	"github.com/yangluoshen/unidoc/pdf/internal/testutils"
 )
 
 // Test loading of a basic checkbox field with a merged-in annotation.

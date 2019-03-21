@@ -8,7 +8,7 @@ package model
 import (
 	"testing"
 
-	"github.com/unidoc/unidoc/pdf/core"
+	"github.com/yangluoshen/unidoc/pdf/core"
 )
 
 func init() {

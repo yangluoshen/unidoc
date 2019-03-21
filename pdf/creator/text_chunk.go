@@ -6,8 +6,8 @@
 package creator
 
 import (
-	"github.com/unidoc/unidoc/pdf/core"
-	"github.com/unidoc/unidoc/pdf/model"
+	"github.com/yangluoshen/unidoc/pdf/core"
+	"github.com/yangluoshen/unidoc/pdf/model"
 )
 
 // TextChunk represents a chunk of text along with a particular style.

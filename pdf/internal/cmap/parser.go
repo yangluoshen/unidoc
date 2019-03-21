@@ -13,8 +13,8 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/unidoc/unidoc/common"
-	"github.com/unidoc/unidoc/pdf/core"
+	"github.com/yangluoshen/unidoc/common"
+	"github.com/yangluoshen/unidoc/pdf/core"
 )
 
 // cMapParser parses CMap character to unicode mapping files.

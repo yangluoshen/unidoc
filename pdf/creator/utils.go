@@ -8,7 +8,7 @@ package creator
 import (
 	"os"
 
-	"github.com/unidoc/unidoc/pdf/model"
+	"github.com/yangluoshen/unidoc/pdf/model"
 )
 
 // Loads the template from path as a list of pages.

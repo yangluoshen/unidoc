@@ -8,7 +8,7 @@ package core
 import (
 	"fmt"
 
-	"github.com/unidoc/unidoc/common"
+	"github.com/yangluoshen/unidoc/common"
 )
 
 // NewEncoderFromStream creates a StreamEncoder based on the stream's dictionary.

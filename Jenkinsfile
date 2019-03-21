@@ -18,7 +18,7 @@ node {
     env.TMPDIR="${WORKSPACE}/temp"
     sh "mkdir -p ${env.TMPDIR}"
 
-    dir("${GOPATH}/src/github.com/unidoc/unidoc") {
+    dir("${GOPATH}/src/github.com/yangluoshen/unidoc") {
         sh 'go version'
 
         stage('Checkout') {

@@ -6,7 +6,7 @@
 package model
 
 import (
-	"github.com/unidoc/unidoc/pdf/core"
+	"github.com/yangluoshen/unidoc/pdf/core"
 )
 
 // PdfModel is a higher level PDF construct which can be collapsed into a PdfObject.
