@@ -627,7 +627,7 @@ type textObject struct {
 	state     *textState
 	tm        transform.Matrix // Text matrix. For the character pointer.
 	tlm       transform.Matrix // Text line matrix. For the start of line pointer.
-	marks     []textMark       // Text marks get written here.
+	marks     []TextMark       // Text marks get written here.
 }
 
 // newTextState returns a default textState.
@@ -770,22 +770,22 @@ func (to *textObject) moveTo(tx, ty float64) {
 	to.tm = to.tlm
 }
 
-// textMark represents text drawn on a page and its position in device coordinates.
+// TextMark represents text drawn on a page and its position in device coordinates.
 // All dimensions are in device coordinates.
-type textMark struct {
-	text          string          // The text.
-	orient        int             // The text orientation in degrees. This is the current TRM rounded to 10°.
-	orientedStart transform.Point // Left of text in orientation where text is horizontal.
-	orientedEnd   transform.Point // Right of text in orientation where text is horizontal.
-	height        float64         // Text height.
-	spaceWidth    float64         // Best guess at the width of a space in the font the text was rendered with.
+type TextMark struct {
+	Text          string          // The text.
+	Orient        int             // The text orientation in degrees. This is the current TRM rounded to 10°.
+	OrientedStart transform.Point // Left of text in orientation where text is horizontal.
+	OrientedEnd   transform.Point // Right of text in orientation where text is horizontal.
+	Height        float64         // Text height.
+	SpaceWidth    float64         // Best guess at the width of a space in the font the text was rendered with.
 	count         int64           // To help with reading debug logs.
 }
 
-// newTextMark returns an textMark for text `text` rendered with text rendering matrix (TRM) `trm` and end
+// newTextMark returns an TextMark for text `text` rendered with text rendering matrix (TRM) `trm` and end
 // of character device coordinates `end`. `spaceWidth` is our best guess at the width of a space in
 // the font the text is rendered in device coordinates.
-func (to *textObject) newTextMark(text string, trm transform.Matrix, end transform.Point, spaceWidth float64) textMark {
+func (to *textObject) newTextMark(text string, trm transform.Matrix, end transform.Point, spaceWidth float64) TextMark {
 	to.e.textCount++
 	theta := trm.Angle()
 	orient := nearestMultiple(theta, 10)
@@ -796,13 +796,13 @@ func (to *textObject) newTextMark(text string, trm transform.Matrix, end transfo
 		height = trm.ScalingFactorX()
 	}
 
-	return textMark{
-		text:          text,
-		orient:        orient,
-		orientedStart: translation(trm).Rotate(theta),
-		orientedEnd:   end.Rotate(theta),
-		height:        height,
-		spaceWidth:    spaceWidth,
+	return TextMark{
+		Text:          text,
+		Orient:        orient,
+		OrientedStart: translation(trm).Rotate(theta),
+		OrientedEnd:   end.Rotate(theta),
+		Height:        height,
+		SpaceWidth:    spaceWidth,
 		count:         to.e.textCount,
 	}
 }
@@ -817,21 +817,21 @@ func nearestMultiple(x float64, m int) int {
 }
 
 // String returns a string describing `t`.
-func (t textMark) String() string {
-	return fmt.Sprintf("textMark{@%03d [%.3f,%.3f] %.1f %d° %q}",
-		t.count, t.orientedStart.X, t.orientedStart.Y, t.Width(), t.orient, truncate(t.text, 100))
+func (t TextMark) String() string {
+	return fmt.Sprintf("TextMark{@%03d [%.3f,%.3f] %.1f %d° %q}",
+		t.count, t.OrientedStart.X, t.OrientedStart.Y, t.Width(), t.Orient, truncate(t.Text, 100))
 }
 
 // Width returns the width of `t`.text in the text direction.
-func (t textMark) Width() float64 {
-	return math.Abs(t.orientedStart.X - t.orientedEnd.X)
+func (t TextMark) Width() float64 {
+	return math.Abs(t.OrientedStart.X - t.OrientedEnd.X)
 }
 
 // PageText represents the layout of text on a device page.
 // It's implementation is opaque to allow for future optimizations.
 type PageText struct {
 	// PageText is currently implemented as a list of texts and their positions on a PDF page.
-	marks []textMark
+	marks []TextMark
 }
 
 // String returns a string describing `pt`.
@@ -852,8 +852,8 @@ func (pt PageText) length() int {
 func (pt PageText) height() float64 {
 	fontHeight := 0.0
 	for _, t := range pt.marks {
-		if t.height > fontHeight {
-			fontHeight = t.height
+		if t.Height > fontHeight {
+			fontHeight = t.Height
 		}
 	}
 	return fontHeight
@@ -885,13 +885,13 @@ func (pt PageText) ToText() string {
 func (pt *PageText) sortPosition(tol float64) {
 	sort.SliceStable(pt.marks, func(i, j int) bool {
 		ti, tj := pt.marks[i], pt.marks[j]
-		if ti.orient != tj.orient {
-			return ti.orient < tj.orient
+		if ti.Orient != tj.Orient {
+			return ti.Orient < tj.Orient
 		}
-		if math.Abs(ti.orientedStart.Y-tj.orientedStart.Y) > tol {
-			return ti.orientedStart.Y > tj.orientedStart.Y
+		if math.Abs(ti.OrientedStart.Y-tj.OrientedStart.Y) > tol {
+			return ti.OrientedStart.Y > tj.OrientedStart.Y
 		}
-		return ti.orientedStart.X < tj.orientedStart.X
+		return ti.OrientedStart.X < tj.OrientedStart.X
 	})
 }
 
@@ -909,9 +909,9 @@ type textLine struct {
 func (pt PageText) toLines(tol float64) []textLine {
 	// We divide `pt.marks` into slices which contain texts with the same orientation, extract the lines
 	// for each orientation then return the concatention of these lines sorted by orientation.
-	tlOrient := make(map[int][]textMark, len(pt.marks))
+	tlOrient := make(map[int][]TextMark, len(pt.marks))
 	for _, t := range pt.marks {
-		tlOrient[t.orient] = append(tlOrient[t.orient], t)
+		tlOrient[t.Orient] = append(tlOrient[t.Orient], t)
 	}
 	var lines []textLine
 	for _, o := range orientKeys(tlOrient) {
@@ -932,7 +932,7 @@ func (pt PageText) toLinesOrient(tol float64) []textLine {
 	var lines []textLine
 	var words []string
 	var x []float64
-	y := pt.marks[0].orientedStart.Y
+	y := pt.marks[0].OrientedStart.Y
 
 	scanning := false
 
@@ -941,7 +941,7 @@ func (pt PageText) toLinesOrient(tol float64) []textLine {
 	lastEndX := 0.0 // lastEndX is pt.marks[i-1].orientedEnd.X
 
 	for _, t := range pt.marks {
-		if t.orientedStart.Y+tol < y {
+		if t.OrientedStart.Y+tol < y {
 			if len(words) > 0 {
 				line := newLine(y, x, words)
 				if averageCharWidth.running {
@@ -953,7 +953,7 @@ func (pt PageText) toLinesOrient(tol float64) []textLine {
 			}
 			words = []string{}
 			x = []float64{}
-			y = t.orientedStart.Y
+			y = t.OrientedStart.Y
 			scanning = false
 		}
 
@@ -963,10 +963,10 @@ func (pt PageText) toLinesOrient(tol float64) []textLine {
 		// The tricky thing to guess here is the width of a space at normal spacing.
 		// We follow PdfBox and use minFloat(deltaSpace, deltaCharWidth).
 		deltaSpace := 0.0
-		if t.spaceWidth == 0 {
+		if t.SpaceWidth == 0 {
 			deltaSpace = math.MaxFloat64
 		} else {
-			wordSpacing.update(t.spaceWidth)
+			wordSpacing.update(t.SpaceWidth)
 			deltaSpace = wordSpacing.ave * 0.5
 		}
 		averageCharWidth.update(t.Width())
@@ -974,25 +974,25 @@ func (pt PageText) toLinesOrient(tol float64) []textLine {
 
 		isSpace := false
 		nextWordX := lastEndX + minFloat(deltaSpace, deltaCharWidth)
-		if scanning && t.text != " " {
-			isSpace = nextWordX < t.orientedStart.X
+		if scanning && t.Text != " " {
+			isSpace = nextWordX < t.OrientedStart.X
 		}
 		common.Log.Trace("t=%s", t)
 		common.Log.Trace("width=%.2f delta=%.2f deltaSpace=%.2g deltaCharWidth=%.2g",
 			t.Width(), minFloat(deltaSpace, deltaCharWidth), deltaSpace, deltaCharWidth)
 		common.Log.Trace("%+q [%.1f, %.1f] lastEndX=%.2f nextWordX=%.2f (%.2f) isSpace=%t",
-			t.text, t.orientedStart.X, t.orientedStart.Y, lastEndX, nextWordX,
-			nextWordX-t.orientedStart.X, isSpace)
+			t.Text, t.OrientedStart.X, t.OrientedStart.Y, lastEndX, nextWordX,
+			nextWordX-t.OrientedStart.X, isSpace)
 
 		if isSpace {
 			words = append(words, " ")
-			x = append(x, (lastEndX+t.orientedStart.X)*0.5)
+			x = append(x, (lastEndX+t.OrientedStart.X)*0.5)
 		}
 
 		// Add the text to the line.
-		lastEndX = t.orientedEnd.X
-		words = append(words, t.text)
-		x = append(x, t.orientedStart.X)
+		lastEndX = t.OrientedEnd.X
+		words = append(words, t.Text)
+		x = append(x, t.OrientedStart.X)
 		scanning = true
 		common.Log.Trace("lastEndX=%.2f", lastEndX)
 	}
@@ -1007,7 +1007,7 @@ func (pt PageText) toLinesOrient(tol float64) []textLine {
 }
 
 // orientKeys returns the keys of `tlOrient` as a sorted slice.
-func orientKeys(tlOrient map[int][]textMark) []int {
+func orientKeys(tlOrient map[int][]TextMark) []int {
 	keys := []int{}
 	for k := range tlOrient {
 		keys = append(keys, k)
