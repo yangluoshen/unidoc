@@ -7,18 +7,19 @@ import (
 
 	"github.com/yangluoshen/unidoc/pdf/extractor"
 	pdf "github.com/yangluoshen/unidoc/pdf/model"
-	"reflect"
+	"strconv"
+	"github.com/yangluoshen/unidoc/pdf/creator"
 )
 
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Printf("Usage: go run pdf_extract_text.go input.pdf\n")
+	if len(os.Args) < 3 {
+		fmt.Printf("Usage: go run pdf_insert_text.go input.pdf <page> <xpos> <ypos> \"text\" output.pdf\n")
 		os.Exit(1)
 	}
-
 	inputPath := os.Args[1]
+	outputPath := os.Args[2]
 
-	err := outputPdfText(inputPath)
+	err := outputPdfText(inputPath, outputPath)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)
@@ -26,7 +27,7 @@ func main() {
 }
 
 // outputPdfText prints out contents of PDF file to stdout.
-func outputPdfText(inputPath string) error {
+func outputPdfText(inputPath, out string) error {
 	f, err := os.Open(inputPath)
 	if err != nil {
 		return err
@@ -44,9 +45,8 @@ func outputPdfText(inputPath string) error {
 		return err
 	}
 
-	fmt.Printf("--------------------\n")
-	fmt.Printf("PDF to text extraction:\n")
-	fmt.Printf("--------------------\n")
+	c := creator.New()
+
 	for i := 0; i < numPages; i++ {
 		pageNum := i + 1
 
@@ -60,55 +60,36 @@ func outputPdfText(inputPath string) error {
 			return err
 		}
 
-		pText, numChars, numMisses, err := ex.ExtractPageText()
+		pText, _, _, err := ex.ExtractPageText()
 		if err != nil {
 			return err
 		}
 
-		/*
-		text, err := ex.ExtractText()
-		if err != nil {
-			return err
-		}
-		*/
+		c.NewPage()
 
-		fmt.Println("------------------------------")
-		fmt.Printf("Page %d:\n", pageNum)
-		fmt.Printf("\"%s\"\n", pText.ToText())
-		fmt.Printf("numChars: %d\n", numChars)
-		fmt.Printf("NumMisses: %d\n", numMisses)
-		printText(pText)
-		fmt.Println("------------------------------")
+		for _, tm := range pText.Marks {
+			p := c.NewParagraph(tm.Text)
+			p.SetPos(tm.OrientedStart.X, c.Context().PageHeight - tm.OrientedStart.Y)
+			_ = c.Draw(p)
+		}
 	}
+	err = c.WriteToFile(out)
 
 	return nil
 }
 
 func printText(t *extractor.PageText) {
-	v := reflect.ValueOf(*t)
-
-	marks := v.FieldByName("marks")
-	if marks.Len() <= 0 {
-		return
+	for _, m := range t.Marks {
+		fmt.Printf("%v,", m.Text)
+		fmt.Printf("%v,", m.Orient)
+		fmt.Printf("%v,", m.OrientedStart)
+		fmt.Printf("%v,", m.OrientedEnd)
+		fmt.Printf("%v,", m.Height)
+		fmt.Printf("%v\n", round(m.SpaceWidth))
 	}
+}
 
-	for i:=0; i< marks.Len(); i++ {
-		m := marks.Index(i)
-		fmt.Println("mark:", m)
-
-		text := m.FieldByName("text").String()
-		fmt.Println("text:", text)
-
-		orient := m.FieldByName("orient").Int()
-		fmt.Println("orient:", orient)
-
-		orientedStartX := m.FieldByName("orientedStart").FieldByName("X")
-		orientedStartY := m.FieldByName("orientedStart").FieldByName("Y")
-		fmt.Println("orientedStart:", orientedStartX, orientedStartY)
-
-		fmt.Println("height:", m.FieldByName("height").Float())
-		fmt.Println("spaceWidth:", m.FieldByName("spaceWidth").Float())
-	}
-
-
+func round(value float64) float64 {
+	value, _ = strconv.ParseFloat(fmt.Sprintf("%.3f", value), 64)
+	return value
 }

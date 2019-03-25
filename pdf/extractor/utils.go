@@ -54,26 +54,6 @@ func maxFloat(a, b float64) float64 {
 	return b
 }
 
-func procBuf(buf *bytes.Buffer) {
-	if isTesting {
-		return
-	}
-
-	lk := license.GetLicenseKey()
-	if lk != nil && lk.IsLicensed() {
-		return
-	}
-	fmt.Printf("Unlicensed copy of unidoc\n")
-	fmt.Printf("To get rid of the watermark and keep entire text - Please get a license on https://unidoc.io\n")
-
-	s := "- [Unlicensed UniDoc - Get a license on https://unidoc.io]"
-	if buf.Len() > 100 {
-		s = "... [Truncated - Unlicensed UniDoc - Get a license on https://unidoc.io]"
-		buf.Truncate(buf.Len() - 100)
-	}
-	buf.WriteString(s)
-}
-
 // truncate returns the first `n` characters in string `s`.
 func truncate(s string, n int) string {
 	if len(s) < n {

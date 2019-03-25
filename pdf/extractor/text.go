@@ -103,7 +103,7 @@ func (e *Extractor) extractPageText(contents string, resources *model.PdfPageRes
 				}
 				to = newTextObject(e, resources, gs, &state, &fontStack)
 			case "ET": // End Text
-				pageText.marks = append(pageText.marks, to.marks...)
+				pageText.Marks = append(pageText.Marks, to.marks...)
 				to = nil
 			case "T*": // Move to start of next text line
 				to.nextLine()
@@ -307,7 +307,7 @@ func (e *Extractor) extractPageText(contents string, resources *model.PdfPageRes
 					e.formResults[string(name)] = formResult
 				}
 
-				pageText.marks = append(pageText.marks, formResult.pageText.marks...)
+				pageText.Marks = append(pageText.Marks, formResult.pageText.Marks...)
 				state.numChars += formResult.numChars
 				state.numMisses += formResult.numMisses
 			}
@@ -831,13 +831,13 @@ func (t TextMark) Width() float64 {
 // It's implementation is opaque to allow for future optimizations.
 type PageText struct {
 	// PageText is currently implemented as a list of texts and their positions on a PDF page.
-	marks []TextMark
+	Marks []TextMark
 }
 
 // String returns a string describing `pt`.
 func (pt PageText) String() string {
 	parts := []string{fmt.Sprintf("PageText: %d elements", pt.length())}
-	for _, t := range pt.marks {
+	for _, t := range pt.Marks {
 		parts = append(parts, t.String())
 	}
 	return strings.Join(parts, "\n")
@@ -845,13 +845,13 @@ func (pt PageText) String() string {
 
 // length returns the number of elements in `pt.marks`.
 func (pt PageText) length() int {
-	return len(pt.marks)
+	return len(pt.Marks)
 }
 
 // height returns the max height of the elements in `pt.marks`.
 func (pt PageText) height() float64 {
 	fontHeight := 0.0
-	for _, t := range pt.marks {
+	for _, t := range pt.Marks {
 		if t.Height > fontHeight {
 			fontHeight = t.Height
 		}
@@ -864,7 +864,7 @@ func (pt PageText) ToText() string {
 	fontHeight := pt.height()
 	// We sort with a y tolerance to allow for subscripts, diacritics etc.
 	tol := minFloat(fontHeight*0.2, 5.0)
-	common.Log.Trace("ToText: %d elements fontHeight=%.1f tol=%.1f", len(pt.marks), fontHeight, tol)
+	common.Log.Trace("ToText: %d elements fontHeight=%.1f tol=%.1f", len(pt.Marks), fontHeight, tol)
 
 	// Uncomment the 2 following Trace statements to see the effects of sorting/
 	// common.Log.Trace("ToText: Before sorting %s", pt)
@@ -883,8 +883,8 @@ func (pt PageText) ToText() string {
 // Sorting is by orientation then top to bottom, left to right when page is orientated so that text
 // is horizontal.
 func (pt *PageText) sortPosition(tol float64) {
-	sort.SliceStable(pt.marks, func(i, j int) bool {
-		ti, tj := pt.marks[i], pt.marks[j]
+	sort.SliceStable(pt.Marks, func(i, j int) bool {
+		ti, tj := pt.Marks[i], pt.Marks[j]
 		if ti.Orient != tj.Orient {
 			return ti.Orient < tj.Orient
 		}
@@ -909,8 +909,8 @@ type textLine struct {
 func (pt PageText) toLines(tol float64) []textLine {
 	// We divide `pt.marks` into slices which contain texts with the same orientation, extract the lines
 	// for each orientation then return the concatention of these lines sorted by orientation.
-	tlOrient := make(map[int][]TextMark, len(pt.marks))
-	for _, t := range pt.marks {
+	tlOrient := make(map[int][]TextMark, len(pt.Marks))
+	for _, t := range pt.Marks {
 		tlOrient[t.Orient] = append(tlOrient[t.Orient], t)
 	}
 	var lines []textLine
@@ -926,13 +926,13 @@ func (pt PageText) toLines(tol float64) []textLine {
 // Caller must sort the text list top-to-bottom, left-to-right (for orientation adjusted so
 // that text is horizontal) before calling this function.
 func (pt PageText) toLinesOrient(tol float64) []textLine {
-	if len(pt.marks) == 0 {
+	if len(pt.Marks) == 0 {
 		return []textLine{}
 	}
 	var lines []textLine
 	var words []string
 	var x []float64
-	y := pt.marks[0].OrientedStart.Y
+	y := pt.Marks[0].OrientedStart.Y
 
 	scanning := false
 
@@ -940,7 +940,7 @@ func (pt PageText) toLinesOrient(tol float64) []textLine {
 	wordSpacing := exponAve{}
 	lastEndX := 0.0 // lastEndX is pt.marks[i-1].orientedEnd.X
 
-	for _, t := range pt.marks {
+	for _, t := range pt.Marks {
 		if t.OrientedStart.Y+tol < y {
 			if len(words) > 0 {
 				line := newLine(y, x, words)

@@ -5,7 +5,7 @@ import (
 
 	pdfcontent "github.com/yangluoshen/unidoc/pdf/contentstream"
 	pdfcore "github.com/yangluoshen/unidoc/pdf/core"
-	pdf "github.com/unidoc/yangluoshen/pdf/model"
+	pdf "github.com/yangluoshen/unidoc/pdf/model"
 )
 
 // Circle represents a circle shape with fill and border properties that can be drawn to a PDF content stream.
