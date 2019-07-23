@@ -1,8 +1,7 @@
 /*
  * Basic PDF split example: Splitting by page range.
  *
- * Run as: go run pdf_split.go input.pdf <page_from> <page_to> output.pdf
- * To get only page 1 and 2 from input.pdf and save as output.pdf run: go run pdf_split.go input.pdf 1 2 output.pdf
+ * Run as: go run pdf_split.go input.pdf output
  */
 
 package main
@@ -10,58 +9,39 @@ package main
 import (
 	"fmt"
 	"os"
-	"strconv"
-
-	//unicommon "github.com/unidoc/unidoc/common"
 	pdf "github.com/yangluoshen/unidoc/pdf/model"
+	"gopkg.in/h2non/bimg.v1"
+	"bytes"
 )
 
-func init() {
-	// When debugging: use debug-level console logger.
-	//unicommon.SetLogger(unicommon.NewConsoleLogger(unicommon.LogLevelDebug))
-}
+const (
+	pdfTpl = "output/%s_%d.pdf"
+	pngTpl = "output/%s_%d.png"
+)
 
 func main() {
-	if len(os.Args) < 5 {
+	if len(os.Args) < 2 {
 		fmt.Printf("Usage: go run pdf_split.go input.pdf <page_from> <page_to> output.pdf\n")
 		os.Exit(1)
 	}
 
 	inputPath := os.Args[1]
 
-	strSplitFrom := os.Args[2]
-	splitFrom, err := strconv.Atoi(strSplitFrom)
+	err := split(inputPath)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)
 	}
 
-	strSplitTo := os.Args[3]
-	splitTo, err := strconv.Atoi(strSplitTo)
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		os.Exit(1)
-	}
-
-	outputPath := os.Args[4]
-
-	err = splitPdf(inputPath, outputPath, splitFrom, splitTo)
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		os.Exit(1)
-	}
-
-	fmt.Printf("Complete, see output file: %s\n", outputPath)
+	fmt.Println("Complete")
 }
 
-func splitPdf(inputPath string, outputPath string, pageFrom int, pageTo int) error {
-	pdfWriter := pdf.NewPdfWriter()
+func split(inputPath string) error {
 
 	f, err := os.Open(inputPath)
 	if err != nil {
 		return err
 	}
-
 	defer f.Close()
 
 	pdfReader, err := pdf.NewPdfReader(f)
@@ -86,25 +66,58 @@ func splitPdf(inputPath string, outputPath string, pageFrom int, pageTo int) err
 		return err
 	}
 
-	if numPages < pageTo {
+	// convert
+	for i := 1; i <= numPages; i++ {
+		page, err := pdfReader.GetPage(i)
+		if err != nil {
+			return err
+		}
+		err = pageToPdf(page, fmt.Sprintf(pdfTpl, f.Name()[:len(f.Name())-4], i))
+		if err != nil {
+			panic(err)
+		}
+		err = pageToPng(page, fmt.Sprintf(pngTpl, f.Name()[:len(f.Name())-4], i))
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	// statistics
+	for i := 1; i <= numPages; i++ {
+		pdff, err := os.Open(fmt.Sprintf(pdfTpl, f.Name()[:len(f.Name())-4], i))
+		if err != nil {
+			panic(err)
+		}
+		pngf, err := os.Open(fmt.Sprintf(pngTpl, f.Name()[:len(f.Name())-4], i))
+		if err != nil {
+			panic(err)
+		}
+
+		info1, _ := pdff.Stat()
+		info2, _ := pngf.Stat()
+
+		f, err := os.OpenFile("statistics.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			panic(fmt.Errorf("OpenFile failed:%s", err))
+		}
+		if _, err := f.Write([]byte(fmt.Sprintf("%.2fk, %.2fk\n", float64(info1.Size())/1024, float64(info2.Size())/1024))); err != nil {
+			panic(fmt.Errorf("write failed:%s", err))
+		}
+		if err := f.Close(); err != nil {
+			panic(err)
+		}
+	}
+	return nil
+}
+
+func pageToPdf(page *pdf.PdfPage, outFile string) error {
+	pdfWriter := pdf.NewPdfWriter()
+	err := pdfWriter.AddPage(page)
+	if err != nil {
 		return err
 	}
 
-	for i := pageFrom; i <= pageTo; i++ {
-		pageNum := i
-
-		page, err := pdfReader.GetPage(pageNum)
-		if err != nil {
-			return err
-		}
-
-		err = pdfWriter.AddPage(page)
-		if err != nil {
-			return err
-		}
-	}
-
-	fWrite, err := os.Create(outputPath)
+	fWrite, err := os.Create(outFile)
 	if err != nil {
 		return err
 	}
@@ -115,7 +128,45 @@ func splitPdf(inputPath string, outputPath string, pageFrom int, pageTo int) err
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
+func pageToPng(page *pdf.PdfPage, outFile string) error {
+
+	pdfWriter := pdf.NewPdfWriter()
+	err := pdfWriter.AddPage(page)
+	if err != nil {
+		return err
+	}
+	var buf bytes.Buffer
+	err = pdfWriter.Write(&buf)
+	if err != nil {
+		return err
+	}
+
+	//w, h := getPageWH(page)
+	//fmt.Println("w, h:", w, h)
+
+	o := &bimg.Options{
+		//Width: int(w),
+		//Height: int(h),
+		Quality: 200,
+		Type: bimg.PNG,
+		Zoom: 2,
+	}
+	newImage, err := bimg.NewImage(buf.Bytes()).Process(*o)
+	if err != nil {
+		return err
+	}
+
+	bimg.Write(outFile, newImage)
+	return nil
+}
+
+func getPageWH(page *pdf.PdfPage) (w, h float64) {
+	bbox, _ := page.GetMediaBox()
+
+	w = (*bbox).Urx - (*bbox).Llx
+	h = (*bbox).Ury - (*bbox).Lly
+	return
+}

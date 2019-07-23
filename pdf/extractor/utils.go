@@ -6,10 +6,8 @@
 package extractor
 
 import (
-	"bytes"
 	"fmt"
 
-	"github.com/yangluoshen/unidoc/common/license"
 	"github.com/yangluoshen/unidoc/pdf/core"
 )
 

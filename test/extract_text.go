@@ -37,6 +37,7 @@ func outputPdfText(inputPath, out string) error {
 
 	pdfReader, err := pdf.NewPdfReader(f)
 	if err != nil {
+		panic(err)
 		return err
 	}
 
